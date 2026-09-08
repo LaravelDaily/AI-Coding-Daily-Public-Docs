@@ -1,0 +1,840 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="How a blinded judge model spends 100 code-quality points on a Laravel codebase — the full rubric plus five real worked judgments.">
+<style>
+  html { color-scheme: light dark; }
+  body { margin: 0; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+</style>
+<title>Equipment Library Scorecard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;700&display=swap">
+</head>
+<body>
+
+<style>
+  :root {
+    --paper:      #eceee9;
+    --surface:    #f7f8f5;
+    --surface-2:  #e2e5df;
+    --ink:        #16191c;
+    --ink-soft:   #4c5350;
+    --ink-faint:  #757c78;
+    --rule:       #c8ccc5;
+    --rule-hard:  #9aa197;
+    --teal:       #0d5a51;
+    --teal-soft:  #d6e5e1;
+    --rust:       #a83a1c;
+    --rust-soft:  #f2ded7;
+    --amber:      #8a6209;
+    --amber-soft: #f0e5cc;
+
+    --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    --f-body:    "Source Serif 4", Georgia, "Times New Roman", serif;
+    --f-mono:    "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #14171a;
+      --surface:    #1b1f22;
+      --surface-2:  #262b2e;
+      --ink:        #e8ebe6;
+      --ink-soft:   #b0b7b2;
+      --ink-faint:  #838a86;
+      --rule:       #333a3d;
+      --rule-hard:  #4d5559;
+      --teal:       #5fc9b6;
+      --teal-soft:  #163530;
+      --rust:       #f08b64;
+      --rust-soft:  #3a1e15;
+      --amber:      #d9ad4a;
+      --amber-soft: #33280f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:      #14171a;
+    --surface:    #1b1f22;
+    --surface-2:  #262b2e;
+    --ink:        #e8ebe6;
+    --ink-soft:   #b0b7b2;
+    --ink-faint:  #838a86;
+    --rule:       #333a3d;
+    --rule-hard:  #4d5559;
+    --teal:       #5fc9b6;
+    --teal-soft:  #163530;
+    --rust:       #f08b64;
+    --rust-soft:  #3a1e15;
+    --amber:      #d9ad4a;
+    --amber-soft: #33280f;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 19px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 32px 100px; }
+
+  h1, h2, h3, h4, .lbl, th, .mono { font-family: var(--f-display); }
+
+  .lbl {
+    font-size: 13px; font-weight: 600; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--ink-faint);
+  }
+
+  /* ---------- masthead ---------- */
+  .mast {
+    border-bottom: 3px solid var(--ink);
+    padding: 44px 0 28px;
+    display: grid; gap: 20px;
+  }
+  .mast h1 {
+    font-size: clamp(38px, 5.4vw, 64px);
+    line-height: 1.02; margin: 0; font-weight: 700;
+    letter-spacing: -0.025em; text-wrap: balance;
+  }
+  .mast .sub {
+    font-size: 21px; color: var(--ink-soft); max-width: 60ch; margin: 0;
+  }
+  .mast-meta {
+    display: flex; flex-wrap: wrap; gap: 10px 28px;
+    padding-top: 6px; border-top: 1px solid var(--rule);
+  }
+  .mast-meta div { display: flex; gap: 9px; align-items: baseline; }
+  .mast-meta .v { font-family: var(--f-mono); font-size: 15px; color: var(--ink); }
+
+  /* ---------- pipeline strip ---------- */
+  .pipe {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+    background: var(--rule); border: 1px solid var(--rule);
+    margin: 36px 0 10px;
+  }
+  .pipe > div { background: var(--surface); padding: 16px 18px; }
+  .pipe .n {
+    font-family: var(--f-mono); font-size: 13px; font-weight: 700;
+    color: var(--teal); display: block; margin-bottom: 4px;
+  }
+  .pipe p { margin: 0; font-size: 16.5px; line-height: 1.45; color: var(--ink-soft); }
+  .pipe strong { color: var(--ink); font-weight: 600; }
+
+  /* ---------- section headers ---------- */
+  section { padding-top: 66px; }
+  .shead { display: flex; align-items: baseline; gap: 16px; border-bottom: 2px solid var(--ink); padding-bottom: 10px; margin-bottom: 26px; }
+  .shead h2 { margin: 0; font-size: clamp(26px, 3vw, 34px); letter-spacing: -0.02em; }
+  .shead .lbl { margin-left: auto; }
+
+  /* ---------- weight bar ---------- */
+  .bar { display: flex; height: 68px; border: 1px solid var(--ink); overflow: hidden; }
+  .bar div {
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    border-right: 1px solid var(--ink); color: var(--ink);
+    background: var(--surface); gap: 1px;
+  }
+  .bar div:last-child { border-right: 0; }
+  .bar .code { font-family: var(--f-mono); font-weight: 700; font-size: 16px; }
+  .bar .pts { font-family: var(--f-mono); font-size: 13px; color: var(--ink-soft); }
+  .bar .t1 { background: var(--teal-soft); }
+  .bar .t2 { background: var(--surface-2); }
+  .barcap { display: flex; justify-content: space-between; margin-top: 8px; }
+  .barcap span { font-size: 15px; color: var(--ink-faint); font-family: var(--f-mono); }
+
+  /* ---------- dimension tiles ---------- */
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(258px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-top: 30px; }
+  .tile { background: var(--surface); padding: 20px; display: grid; gap: 8px; align-content: start; }
+  .tile .top { display: flex; align-items: baseline; justify-content: space-between; }
+  .tile .code { font-family: var(--f-mono); font-weight: 700; font-size: 15px; color: var(--teal); }
+  .tile .max { font-family: var(--f-display); font-weight: 700; font-size: 30px; font-variant-numeric: tabular-nums; }
+  .tile h3 { margin: 0; font-size: 19px; letter-spacing: -0.01em; }
+  .tile p { margin: 0; font-size: 16px; line-height: 1.45; color: var(--ink-soft); }
+
+  /* ---------- criteria tables ---------- */
+  .dim { margin-bottom: 44px; }
+  .dim-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; border-bottom: 1px solid var(--rule-hard); padding-bottom: 8px; margin-bottom: 4px; }
+  .dim-head h3 { margin: 0; font-size: 24px; letter-spacing: -0.015em; }
+  .dim-head .code { font-family: var(--f-mono); font-weight: 700; color: var(--teal); font-size: 17px; }
+  .dim-head .max { margin-left: auto; font-family: var(--f-mono); font-size: 17px; font-weight: 700; }
+  .dim > .note { font-size: 16px; color: var(--ink-faint); margin: 10px 0 14px; max-width: 78ch; }
+
+  .tbl-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 620px; }
+  th {
+    text-align: left; font-size: 12.5px; letter-spacing: .13em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 600; padding: 12px 12px 8px; border-bottom: 1px solid var(--rule-hard);
+  }
+  td { padding: 12px; border-bottom: 1px solid var(--rule); vertical-align: top; font-size: 17px; line-height: 1.45; }
+  tr:last-child td { border-bottom: 0; }
+  td.id { font-family: var(--f-mono); font-size: 15px; color: var(--ink-faint); width: 62px; white-space: nowrap; }
+  td.p { font-family: var(--f-mono); font-size: 15px; white-space: nowrap; width: 150px; font-variant-numeric: tabular-nums; }
+  td.p b { color: var(--teal); }
+  .neg { color: var(--rust); font-family: var(--f-mono); font-weight: 700; }
+
+  /* ---------- example cards ---------- */
+  .runs { display: grid; gap: 26px; }
+  .run { border: 1px solid var(--rule-hard); background: var(--surface); }
+  .run-head {
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    padding: 18px 22px; border-bottom: 1px solid var(--rule-hard);
+  }
+  .run-head .name { font-family: var(--f-mono); font-weight: 700; font-size: 19px; }
+  .run-head .total { font-family: var(--f-display); font-weight: 700; font-size: 34px; margin-left: auto; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  .run-head .total span { font-size: 17px; color: var(--ink-faint); font-weight: 500; }
+  .band { font-family: var(--f-mono); font-size: 12.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: 4px 10px; border: 1px solid currentColor; }
+  .band.strong { color: var(--teal); }
+  .band.solid  { color: var(--amber); }
+  .band.mixed  { color: var(--rust); }
+
+  .sparks { display: grid; grid-template-columns: repeat(8, 1fr); gap: 1px; background: var(--rule); border-bottom: 1px solid var(--rule-hard); }
+  .spark { background: var(--surface); padding: 12px 8px 10px; text-align: center; display: grid; gap: 6px; }
+  .spark .c { font-family: var(--f-mono); font-size: 12.5px; color: var(--ink-faint); }
+  .spark .s { font-family: var(--f-mono); font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .spark .track { height: 6px; background: var(--surface-2); }
+  .spark .fill { height: 6px; background: var(--teal); }
+  .spark.lost .s { color: var(--rust); }
+  .spark.lost .fill { background: var(--rust); }
+  .spark.full .s { color: var(--teal); }
+
+  .losses { padding: 6px 22px 20px; }
+  .loss { display: grid; grid-template-columns: 92px 1fr; gap: 18px; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+  .loss:last-child { border-bottom: 0; }
+  .loss .amt { font-family: var(--f-mono); font-weight: 700; font-size: 20px; color: var(--rust); text-align: right; font-variant-numeric: tabular-nums; }
+  .loss .amt small { display: block; font-size: 12px; color: var(--ink-faint); font-weight: 400; letter-spacing: .08em; margin-top: 2px; }
+  .loss h4 { margin: 0 0 5px; font-size: 18.5px; }
+  .loss p { margin: 0 0 8px; font-size: 17px; color: var(--ink-soft); line-height: 1.5; }
+  .cite {
+    font-family: var(--f-mono); font-size: 14px; color: var(--ink-faint);
+    background: var(--surface-2); padding: 3px 8px; display: inline-block; word-break: break-all;
+  }
+  .kept { border-left: 3px solid var(--teal); padding-left: 14px; margin: 2px 0 0; }
+  .kept .amt { color: var(--teal); }
+
+  /* ---------- one criterion, five repos ---------- */
+  .cross { border: 1px solid var(--rule-hard); background: var(--surface); }
+  .cross-head { padding: 18px 22px; border-bottom: 1px solid var(--rule-hard); }
+  .cross-head h3 { margin: 0 0 4px; font-size: 21px; }
+  .cross-head p { margin: 0; font-size: 16.5px; color: var(--ink-soft); }
+  .cross-row { display: grid; grid-template-columns: 210px 78px 1fr; gap: 16px; padding: 14px 22px; border-bottom: 1px solid var(--rule); align-items: baseline; }
+  .cross-row:last-child { border-bottom: 0; }
+  .cross-row .m { font-family: var(--f-mono); font-size: 15.5px; }
+  .cross-row .sc { font-family: var(--f-mono); font-weight: 700; font-size: 16px; font-variant-numeric: tabular-nums; }
+  .cross-row .sc.y { color: var(--teal); }
+  .cross-row .sc.n { color: var(--rust); }
+  .cross-row .d { font-size: 16.5px; color: var(--ink-soft); }
+
+  /* ---------- bands footer ---------- */
+  .bands { display: grid; grid-template-columns: repeat(auto-fit, minmax(148px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .bands div { background: var(--surface); padding: 16px 18px; }
+  .bands .r { font-family: var(--f-mono); font-weight: 700; font-size: 19px; }
+  .bands .n { font-size: 15px; color: var(--ink-faint); letter-spacing: .1em; text-transform: uppercase; font-family: var(--f-display); font-weight: 600; }
+
+  .foot { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--rule); font-size: 15.5px; color: var(--ink-faint); }
+
+  @media (max-width: 800px) {
+    body { font-size: 17px; }
+    .wrap { padding: 0 18px 70px; }
+    .pipe { grid-template-columns: 1fr 1fr; }
+    .sparks { grid-template-columns: repeat(4, 1fr); }
+    .loss { grid-template-columns: 1fr; gap: 6px; }
+    .loss .amt { text-align: left; }
+    .cross-row { grid-template-columns: 1fr; gap: 4px; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="mast">
+    <div>
+      <div class="lbl">Eval 12 · phase 1 · rubric v2.0</div>
+      <h1>How a judge model spends 100 points on a Laravel codebase</h1>
+    </div>
+    <p class="sub">Behavioural tests say <em>whether the app works</em>. This scorecard says <em>whether the code is worth keeping</em> — eight dimensions, forty-nine criteria, every deduction pinned to a <code>file:line</code>.</p>
+    <div class="mast-meta">
+      <div><span class="lbl">Task</span><span class="v">12-equipment-library</span></div>
+      <div><span class="lbl">Judge</span><span class="v">gpt-5.6-sol · codex · medium</span></div>
+      <div><span class="lbl">Submissions scored</span><span class="v">31</span></div>
+      <div><span class="lbl">Range</span><span class="v">62.75 → 92.75</span></div>
+      <div><span class="lbl">Cost per judgment</span><span class="v">≈ $1.00</span></div>
+    </div>
+  </header>
+
+  <div class="pipe">
+    <div><span class="n">STEP 1</span><p>A model gets the phase-1 spec and a fixed Laravel starter. It writes <strong>the catalog, roles, search, deactivation</strong> — and its own tests.</p></div>
+    <div><span class="n">STEP 2</span><p>The harness runs the gates and records them: <strong>Pint, PHPStan, the test suite, <code>composer test</code></strong>, plus five hidden behavioural probes.</p></div>
+    <div><span class="n">STEP 3</span><p>A blinded judge gets <strong>only the diff</strong> plus that evidence packet. No model name, no other submission, no ranking.</p></div>
+    <div><span class="n">STEP 4</span><p>The judge fills a worksheet: one score per criterion, a <strong>deduction ledger</strong> so one flaw is charged exactly once, and citations for every point withheld.</p></div>
+  </div>
+
+  <!-- ============ 1. THE MAP ============ -->
+  <section id="map">
+    <div class="shead"><h2>The 100 points, at a glance</h2><span class="lbl">Zoom-out view</span></div>
+
+    <div class="bar">
+      <div class="t1" style="width:15%"><span class="code">D1</span><span class="pts">15</span></div>
+      <div class="t2" style="width:18%"><span class="code">D2</span><span class="pts">18</span></div>
+      <div class="t1" style="width:14%"><span class="code">D3</span><span class="pts">14</span></div>
+      <div class="t2" style="width:12%"><span class="code">D4</span><span class="pts">12</span></div>
+      <div class="t1" style="width:12%"><span class="code">D5</span><span class="pts">12</span></div>
+      <div class="t2" style="width:11%"><span class="code">D6</span><span class="pts">11</span></div>
+      <div class="t1" style="width:10%"><span class="code">D7</span><span class="pts">10</span></div>
+      <div class="t2" style="width:8%"><span class="code">D8</span><span class="pts">8</span></div>
+    </div>
+    <div class="barcap">
+      <span>0</span><span>33 pts — does it even ship? (D1+D2)</span><span>100</span>
+    </div>
+
+    <div class="tiles">
+      <div class="tile">
+        <div class="top"><span class="code">D1</span><span class="max">15</span></div>
+        <h3>Verification gate</h3>
+        <p>Purely mechanical. Pint, PHPStan, the test run, <code>composer test</code>. No judgment, no arguing.</p>
+      </div>
+      <div class="tile">
+        <div class="top"><span class="code">D2</span><span class="max">18</span></div>
+        <h3>Model-authored test quality</h3>
+        <p>The biggest slice. Not <em>how many</em> tests — which contractual behaviours they actually pin down.</p>
+      </div>
+      <div class="tile">
+        <div class="top"><span class="code">D3</span><span class="max">14</span></div>
+        <h3>Design &amp; boundaries</h3>
+        <p>Thin controllers, one validation boundary, one home for roles and statuses, middleware seams.</p>
+      </div>
+      <div class="tile">
+        <div class="top"><span class="code">D4</span><span class="max">12</span></div>
+        <h3>Schema &amp; model integrity</h3>
+        <p>Additive reversible migrations, indexes that a real query uses, allow-listed writes, useful factories.</p>
+      </div>
+      <div class="tile">
+        <div class="top"><span class="code">D5</span><span class="max">12</span></div>
+        <h3>Laravel / PHP idiom</h3>
+        <p>Types, correct framework APIs, named routes, translated strings, presentation-only Blade.</p>
+      </div>
+      <div class="tile">
+        <div class="top"><span class="code">D6</span><span class="max">11</span></div>
+        <h3>Duplication &amp; dead code</h3>
+        <p>Starts at 11 and only goes down. Copy-pasted forms, unused methods, misleading names.</p>
+      </div>
+      <div class="tile">
+        <div class="top"><span class="code">D7</span><span class="max">10</span></div>
+        <h3>Access control &amp; activity</h3>
+        <p>Deactivation must bite on the <em>next</em> request — on every protected route, settings included.</p>
+      </div>
+      <div class="tile">
+        <div class="top"><span class="code">D8</span><span class="max">8</span></div>
+        <h3>UX &amp; error surfacing</h3>
+        <p>Validation errors, flash messages, empty states, retained search, a delete confirmation that works.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 2. INSIDE EACH DIMENSION ============ -->
+  <section id="detail">
+    <div class="shead"><h2>Inside each dimension</h2><span class="lbl">Criterion by criterion</span></div>
+
+    <!-- D1 -->
+    <div class="dim">
+      <div class="dim-head"><span class="code">D1</span><h3>Verification gate</h3><span class="max">max 15</span></div>
+      <p class="note">The only dimension the judge does not think about. The harness records the four commands, and the score falls out of the exit codes. Template-inherited PHPStan errors still count — the repository is expected to be delivered green.</p>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>#</th><th>Criterion</th><th>Points</th></tr></thead>
+        <tbody>
+          <tr><td class="id">D1.1</td><td><code>vendor/bin/pint --test</code> passes</td><td class="p"><b>2</b> / 0</td></tr>
+          <tr><td class="id">D1.2</td><td>PHPStan error count</td><td class="p">0 → <b>6</b> · 1–2 → 4<br>3–9 → 2 · 10+ → 0</td></tr>
+          <tr><td class="id">D1.3</td><td><code>php artisan test</code> — zero failures or errors</td><td class="p"><b>4</b> / 0</td></tr>
+          <tr><td class="id">D1.4</td><td><code>composer test</code> exits 0</td><td class="p"><b>3</b> / 0</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <!-- D2 -->
+    <div class="dim">
+      <div class="dim-head"><span class="code">D2</span><h3>Model-authored test quality</h3><span class="max">max 18</span></div>
+      <p class="note">D2.1–D2.7 map one-to-one onto the phase-1 contract: full credit, half credit, or zero. The rubric explicitly bans name-trust — a test called “pagination keeps the search query” earns nothing unless it inspects a page link or requests page 2 <em>with</em> the query. Assertion padding is not rewarded.</p>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>#</th><th>Behaviour that must be covered with meaningful assertions</th><th>Points</th></tr></thead>
+        <tbody>
+          <tr><td class="id">D2.1</td><td>Invite-only access: no public registration, guests blocked</td><td class="p"><b>1.0</b></td></tr>
+          <tr><td class="id">D2.2</td><td>Member gets 403 across representative admin actions</td><td class="p"><b>2.0</b></td></tr>
+          <tr><td class="id">D2.3</td><td>Equipment validation, create, update, delete, create→named-edit redirect</td><td class="p"><b>2.0</b></td></tr>
+          <tr><td class="id">D2.4</td><td>Name ordering and the exact 20-item page boundary</td><td class="p"><b>1.5</b></td></tr>
+          <tr><td class="id">D2.5</td><td>Search by name <em>and</em> category, query retained on pagination</td><td class="p"><b>1.5</b></td></tr>
+          <tr><td class="id">D2.6</td><td>Maintenance items stay visible and read <code>Unavailable</code> — list <em>and</em> detail</td><td class="p"><b>1.0</b></td></tr>
+          <tr><td class="id">D2.7</td><td>Deactivation hits an <em>existing session's</em> next request; plus reactivation or rejected login</td><td class="p"><b>2.0</b></td></tr>
+          <tr><td class="id">D2.8</td><td>Invalid writes assert validation errors <em>and</em> unchanged persisted state</td><td class="p"><b>1.5</b> / 0</td></tr>
+          <tr><td class="id">D2.9</td><td>Assertions prove the test title, not an unrelated proxy</td><td class="p"><b>1.5</b> · 1–2 weak → 0.75<br>systemic → 0</td></tr>
+          <tr><td class="id">D2.10</td><td>Rejected admin mutations assert unchanged state (member attempt + deactivated-session attempt)</td><td class="p">both <b>1.5</b> · one → 0.75</td></tr>
+          <tr><td class="id">D2.11</td><td>Extra edges: blank/trimmed search, wildcard semantics, duplicate names, escaped output, forged attributes, missing item</td><td class="p">≥3 → <b>1.5</b> · 2 → 0.75<br>0–1 → 0</td></tr>
+          <tr><td class="id">D2.12</td><td>Focused, deterministic, factory-backed, order-independent</td><td class="p"><b>1.0</b> / 0</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <!-- D3 -->
+    <div class="dim">
+      <div class="dim-head"><span class="code">D3</span><h3>Application design &amp; boundaries</h3><span class="max">max 14</span></div>
+      <p class="note">Each criterion is a three-step ladder: clean → one offender → pervasive. The rubric also disarms the usual false positives — bound <code>LIKE</code> wildcards are not SQL injection, separate store/update requests are not automatically duplication, and an admin request outside an <code>Admin</code> namespace loses nothing on that fact alone.</p>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>#</th><th>Criterion</th><th>Points</th></tr></thead>
+        <tbody>
+          <tr><td class="id">D3.1</td><td>Controllers coordinate request → query/write → response. No view markup, raw SQL, authorization matrices or validation-shaped branching</td><td class="p">clean <b>3.0</b><br>one offender 1.5 · else 0</td></tr>
+          <tr><td class="id">D3.2</td><td>Equipment writes share a reusable validation boundary with explicit authorization responsibility</td><td class="p">shared <b>2.5</b><br>one gap 1.25 · else 0</td></tr>
+          <tr><td class="id">D3.3</td><td>Catalog OR predicates grouped, values bound, declared wildcard behaviour actually implemented</td><td class="p">sound <b>2.0</b><br>one edge defect 1.0</td></tr>
+          <tr><td class="id">D3.4</td><td>Roles, statuses, predicates and labels have one authoritative home (backed enums + helpers)</td><td class="p">centralized <b>2.5</b><br>partly scattered 1.25</td></tr>
+          <tr><td class="id">D3.5</td><td>Active-user and administrator checks are central middleware/policy seams, not repeated in controllers</td><td class="p"><b>2.0</b> / 0</td></tr>
+          <tr><td class="id">D3.6</td><td>Cohesive files; UI state spans a stable component boundary</td><td class="p">clean <b>2.0</b><br>one mixed boundary 1.0</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <!-- D4 -->
+    <div class="dim">
+      <div class="dim-head"><span class="code">D4</span><h3>Schema &amp; model integrity</h3><span class="max">max 12</span></div>
+      <p class="note">Read the migrations, not the models. Indexes cut both ways: a missing one costs points only if the judge can name the query it would serve, and speculative indexes on columns nothing filters cost points too.</p>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>#</th><th>Criterion</th><th>Points</th></tr></thead>
+        <tbody>
+          <tr><td class="id">D4.1</td><td>Additive, reversible migrations defining every phase-1 field with correct nullability and DB defaults</td><td class="p"><b>3.0</b> · minor gap 1.5<br>material gap 0</td></tr>
+          <tr><td class="id">D4.2</td><td>Indexes match demonstrably useful phase-1 access paths, with no redundant ones</td><td class="p">sound <b>2.0</b><br>one gap 1.0 · else 0</td></tr>
+          <tr><td class="id">D4.3</td><td>Model casts and defaults behave consistently on the paths actually used</td><td class="p"><b>2.0</b> · minor drift 1.0</td></tr>
+          <tr><td class="id">D4.4</td><td>Request-derived writes use an allow-list; privileged user fields and password hashing stay protected</td><td class="p">safe <b>2.0</b> · one gap 1.0</td></tr>
+          <tr><td class="id">D4.5</td><td>Factories stay valid and express roles, status and activity states</td><td class="p"><b>2.0</b> · partial 1.0</td></tr>
+          <tr><td class="id">D4.6</td><td>Leaves one obvious seam for the future “don't delete equipment with lending history” rule — without faking later-phase tables</td><td class="p"><b>1.0</b> · awkward 0.5<br>premature 0</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <!-- D5 -->
+    <div class="dim">
+      <div class="dim-head"><span class="code">D5</span><h3>Laravel / PHP idiom</h3><span class="max">max 12</span></div>
+      <p class="note">Six criteria worth two points each — the flattest dimension, and the one that most often bleeds a point at a time.</p>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>#</th><th>Criterion</th><th>Points</th></tr></thead>
+        <tbody>
+          <tr><td class="id">D5.1</td><td>Explicit parameter and return types where knowable; PHPDoc generics on framework types</td><td class="p"><b>2.0</b> · isolated gaps 1.0<br>pervasive 0</td></tr>
+          <tr><td class="id">D5.2</td><td>Framework APIs compatible with the installed version and used correctly</td><td class="p"><b>2.0</b> · one misuse 1.0</td></tr>
+          <tr><td class="id">D5.3</td><td>Named routes and model binding in views, redirects and tests; public names match the contract</td><td class="p"><b>2.0</b> · one gap 1.0</td></tr>
+          <tr><td class="id">D5.4</td><td>Every new user-facing string goes through <code>__()</code> — enum labels and browser prompts included</td><td class="p">all <b>2.0</b> · isolated 1.0<br>pervasive 0</td></tr>
+          <tr><td class="id">D5.5</td><td>Blade is presentation only: no queries, no rule construction, no persistence</td><td class="p">clean <b>2.0</b> · one offender 1.0</td></tr>
+          <tr><td class="id">D5.6</td><td>Names and namespaces communicate responsibility and follow stated project conventions</td><td class="p">clear <b>2.0</b> · one misleading 1.0</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <!-- D6 -->
+    <div class="dim">
+      <div class="dim-head"><span class="code">D6</span><h3>Duplication, dead code &amp; clarity</h3><span class="max">max 11 · subtractive</span></div>
+      <p class="note">Start at 11.0, subtract, floor at zero. “Unused” must be proven with an actual <code>rg</code> across <code>app</code>, <code>resources</code>, <code>database</code>, <code>routes</code> and <code>tests</code> — and framework discovery, route registration and independently callable seeders don't count as dead. Ordinary small controllers and two short forms are not penalised for existing.</p>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>Offence</th><th>Penalty</th><th>Cap</th></tr></thead>
+        <tbody>
+          <tr><td>Create/edit markup repeats a substantial field block a component could own</td><td class="p"><span class="neg">−1.0</span> per form family</td><td class="p">−3.0</td></tr>
+          <tr><td>Unused class, method, scope, import, controller data or factory state</td><td class="p"><span class="neg">−0.5</span> each</td><td class="p">−2.0</td></tr>
+          <tr><td>One file combining multiple substantial UI responsibilities</td><td class="p"><span class="neg">−1.0</span> each</td><td class="p">−2.0</td></tr>
+          <tr><td>Fragile implicit coupling (UI state referenced outside its component scope)</td><td class="p"><span class="neg">−1.0</span> each</td><td class="p">−2.0</td></tr>
+          <tr><td>Same business rule stated in several places with no single source of truth</td><td class="p"><span class="neg">−0.5</span> each</td><td class="p">−1.5</td></tr>
+          <tr><td>Misleading name, comment or stale generated narrative</td><td class="p"><span class="neg">−0.5</span> each</td><td class="p">−1.5</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <!-- D7 -->
+    <div class="dim">
+      <div class="dim-head"><span class="code">D7</span><h3>Access control &amp; account activity</h3><span class="max">max 10</span></div>
+      <p class="note">The phase-1 trap lives here: models remember to guard the catalog and admin routes, then leave the inherited dashboard and settings route groups outside the middleware. Half of D7.1 disappears on that alone.</p>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>#</th><th>Criterion</th><th>Points</th></tr></thead>
+        <tbody>
+          <tr><td class="id">D7.1</td><td>Activity is re-read and enforced on <em>every</em> protected web route on the next request, dashboard and settings included</td><td class="p"><b>3.0</b><br>partial 1.5 · absent 0</td></tr>
+          <tr><td class="id">D7.2</td><td>Members get 403 on admin equipment reads and writes; guests follow normal auth redirects</td><td class="p"><b>2.0</b> · partial 1.0</td></tr>
+          <tr><td class="id">D7.3</td><td>Public registration stays unavailable</td><td class="p"><b>1.0</b> / 0</td></tr>
+          <tr><td class="id">D7.4</td><td>Server-side allow-lists for roles/statuses and Equipment field sizes, types, optional description</td><td class="p">all <b>2.0</b> · one gap 1.0</td></tr>
+          <tr><td class="id">D7.5</td><td>No account CRUD routes or forms added — provisioning stays out of this phase</td><td class="p"><b>1.0</b> / 0</td></tr>
+          <tr><td class="id">D7.6</td><td>Deactivation invalidates the session (or returns a consistent 403) with no redirect loop</td><td class="p"><b>1.0</b> / 0</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <!-- D8 -->
+    <div class="dim">
+      <div class="dim-head"><span class="code">D8</span><h3>UX &amp; error surfacing</h3><span class="max">max 8</span></div>
+      <p class="note">The judge must state its evidence level for every UI finding: source trace, rendered HTML, or real browser interaction. An Alpine <code>@click</code> attribute is not proof that a delete confirmation works — the active component scope has to be traced or the interaction actually run.</p>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>#</th><th>Criterion</th><th>Points</th></tr></thead>
+        <tbody>
+          <tr><td class="id">D8.1</td><td>Every editable Equipment field shows field-level validation errors on the page that submitted it</td><td class="p">all <b>2.0</b> · some 1.0</td></tr>
+          <tr><td class="id">D8.2</td><td>Mutations flash a useful success status <em>and</em> the redirect target renders it</td><td class="p">all <b>1.5</b> · partial 0.75</td></tr>
+          <tr><td class="id">D8.3</td><td>Catalog and admin lists have honest empty states</td><td class="p">both <b>1.0</b> · one 0.5</td></tr>
+          <tr><td class="id">D8.4</td><td>Search text survives validation and navigation; pagination retains the query</td><td class="p"><b>1.0</b> / 0</td></tr>
+          <tr><td class="id">D8.5</td><td>Catalog and detail navigation work without hand-crafting a URL</td><td class="p">both <b>1.0</b> · one 0.5</td></tr>
+          <tr><td class="id">D8.6</td><td>Create, edit and delete controls are visible and operational</td><td class="p">all <b>0.75</b> · partial 0.375</td></tr>
+          <tr><td class="id">D8.7</td><td>Deletion has a functioning confirmation or safeguard</td><td class="p"><b>0.75</b> / 0</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- ============ 3. WORKED EXAMPLES ============ -->
+  <section id="examples">
+    <div class="shead"><h2>Five submissions, and exactly where the points went</h2><span class="lbl">Real judgments</span></div>
+    <p class="note" style="max-width:78ch;margin:-8px 0 26px;color:var(--ink-soft);font-size:17.5px">Every line below is copied from a recorded judgment for this eval. All five submissions <strong>passed the hidden behavioural probes</strong> — the app worked in all five cases. The 30-point spread is entirely about the code.</p>
+
+    <div class="runs">
+
+      <!-- opus-5-high -->
+      <article class="run">
+        <div class="run-head">
+          <span class="name">opus-5 · high</span>
+          <span class="band strong">strong</span>
+          <span class="total">92.75<span> / 100</span></span>
+        </div>
+        <div class="sparks">
+          <div class="spark full"><span class="c">D1</span><span class="s">15</span><div class="track"><div class="fill" style="width:100%"></div></div></div>
+          <div class="spark lost"><span class="c">D2</span><span class="s">13.25</span><div class="track"><div class="fill" style="width:74%"></div></div></div>
+          <div class="spark full"><span class="c">D3</span><span class="s">14</span><div class="track"><div class="fill" style="width:100%"></div></div></div>
+          <div class="spark lost"><span class="c">D4</span><span class="s">11</span><div class="track"><div class="fill" style="width:92%"></div></div></div>
+          <div class="spark lost"><span class="c">D5</span><span class="s">11</span><div class="track"><div class="fill" style="width:92%"></div></div></div>
+          <div class="spark lost"><span class="c">D6</span><span class="s">10.5</span><div class="track"><div class="fill" style="width:95%"></div></div></div>
+          <div class="spark full"><span class="c">D7</span><span class="s">10</span><div class="track"><div class="fill" style="width:100%"></div></div></div>
+          <div class="spark full"><span class="c">D8</span><span class="s">8</span><div class="track"><div class="fill" style="width:100%"></div></div></div>
+        </div>
+        <div class="losses">
+          <div class="loss">
+            <div class="amt">−1.5<small>D2.11</small></div>
+            <div>
+              <h4>None of the six enumerated edge cases is tested</h4>
+              <p>Blank or trimmed search, declared wildcard semantics, two physical items with the same name, escaped output, forged write attributes, response for a missing item — zero of six. The suite does send an SQL-like payload, but that isn't one of the listed edges, so it earns nothing.</p>
+              <span class="cite">candidate/tests/Feature/EquipmentCatalogTest.php:20-59</span>
+            </div>
+          </div>
+          <div class="loss">
+            <div class="amt">−1.5<small>D2.10</small></div>
+            <div>
+              <h4>Rejected mutations never check that nothing was written</h4>
+              <p>The member cases assert <code>403</code> and stop there. A 403 proves the response; it does not prove the row is untouched. And the deactivated-session case only attempts a <code>GET</code>, so no rejected write is verified at all.</p>
+              <span class="cite">candidate/tests/Feature/Admin/EquipmentManagementTest.php:7-28</span>
+            </div>
+          </div>
+          <div class="loss">
+            <div class="amt">−0.75<small>D2.5</small></div>
+            <div>
+              <h4>“Search + pagination” is tested as two separate things</h4>
+              <p>Search by name and by category are both covered, and pagination is covered — but pagination is exercised <em>without</em> a query, and no test inspects a pagination link or requests a later page with the search term. Half credit.</p>
+              <span class="cite">candidate/tests/Feature/EquipmentCatalogTest.php:72-100</span>
+            </div>
+          </div>
+          <div class="loss">
+            <div class="amt">−1.0<small>D4.2</small></div>
+            <div>
+              <h4>An index nothing can use</h4>
+              <p>A B-tree index was added on <code>category</code> — but category is only ever queried through a leading-wildcard <code>LIKE '%…%'</code>, which cannot use it. The <code>name</code> index is justified by the ordering, so only the redundant one is charged.</p>
+              <span class="cite">database/migrations/…_create_equipment_table.php:16-17</span>
+            </div>
+          </div>
+          <div class="loss">
+            <div class="amt">−0.5<small>D6</small></div>
+            <div>
+              <h4><code>Role::label()</code> is never called</h4>
+              <p>Repository-wide search finds the enum cases and <code>User::isAdministrator()</code> consumers, but no caller for the label method. Dead code, verified rather than assumed.</p>
+              <span class="cite">candidate/app/Enums/Role.php:10-19</span>
+            </div>
+          </div>
+          <div class="loss kept">
+            <div class="amt">14 / 14<small>D3</small></div>
+            <div>
+              <h4>What full marks looked like</h4>
+              <p>One shared <code>EquipmentRequest</code> for both writes, search extracted to a single grouped and bound Eloquent scope, backed enums plus <code>EquipmentStatus::isAvailable()</code> and shared label components, and both guards living in dedicated middleware.</p>
+              <span class="cite">app/Enums/EquipmentStatus.php:5-27 · app/Http/Requests/EquipmentRequest.php:10-24</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- sonnet-5-medium -->
+      <article class="run">
+        <div class="run-head">
+          <span class="name">sonnet-5 · medium</span>
+          <span class="band strong">strong</span>
+          <span class="total">85.25<span> / 100</span></span>
+        </div>
+        <div class="sparks">
+          <div class="spark full"><span class="c">D1</span><span class="s">15</span><div class="track"><div class="fill" style="width:100%"></div></div></div>
+          <div class="spark lost"><span class="c">D2</span><span class="s">9.75</span><div class="track"><div class="fill" style="width:54%"></div></div></div>
+          <div class="spark lost"><span class="c">D3</span><span class="s">12.75</span><div class="track"><div class="fill" style="width:91%"></div></div></div>
+          <div class="spark full"><span class="c">D4</span><span class="s">12</span><div class="track"><div class="fill" style="width:100%"></div></div></div>
+          <div class="spark lost"><span class="c">D5</span><span class="s">9</span><div class="track"><div class="fill" style="width:75%"></div></div></div>
+          <div class="spark full"><span class="c">D6</span><span class="s">11</span><div class="track"><div class="fill" style="width:100%"></div></div></div>
+          <div class="spark full"><span class="c">D7</span><span class="s">10</span><div class="track"><div class="fill" style="width:100%"></div></div></div>
+          <div class="spark lost"><span class="c">D8</span><span class="s">5.75</span><div class="track"><div class="fill" style="width:72%"></div></div></div>
+        </div>
+        <div class="losses">
+          <div class="loss">
+            <div class="amt">−1.5<small>D8.2</small></div>
+            <div>
+              <h4>Create, update and delete redirect in silence</h4>
+              <p>All three mutations redirect without attaching any success status, so nothing is flashed and nothing is rendered on arrival. The user saves a record and gets no confirmation that anything happened.</p>
+              <span class="cite">candidate/app/Http/Controllers/Admin/EquipmentController.php:28-55</span>
+            </div>
+          </div>
+          <div class="loss">
+            <div class="amt">−0.75<small>D8.7</small></div>
+            <div>
+              <h4>Delete submits straight through</h4>
+              <p>The delete form has no confirmation, no <code>onsubmit</code> guard, no safeguard of any kind. One click destroys the record.</p>
+              <span class="cite">candidate/resources/views/admin/equipment/index.blade.php:3-35</span>
+            </div>
+          </div>
+          <div class="loss">
+            <div class="amt">−2.0<small>D5.1</small></div>
+            <div>
+              <h4>Typed methods, untyped closures — everywhere</h4>
+              <p>The methods themselves are well typed, but route groups, migration callbacks and <em>every</em> Pest test closure omit knowable return types. Isolated gaps would cost 1.0; the judge ruled it pervasive across the delta, so the full 2 points go.</p>
+              <span class="cite">candidate/tests/Feature/EquipmentCatalogTest.php:6-51 · routes/web.php:9-20</span>
+            </div>
+          </div>
+          <div class="loss">
+            <div class="amt">−0.75<small>D2.5</small></div>
+            <div>
+              <h4>A fixture that can't tell the two branches apart</h4>
+              <p>The single search fixture matches “garden” in <em>both</em> its name and its category — so a passing test proves nothing about which OR branch fired. The test looks green and covers half of what it claims.</p>
+              <span class="cite">candidate/tests/Feature/EquipmentCatalogTest.php:23-43</span>
+            </div>
+          </div>
+          <div class="loss">
+            <div class="amt">−1.25<small>D3.4</small></div>
+            <div>
+              <h4>One label escapes the enum</h4>
+              <p>Roles, statuses and predicates are centralized — except the member-facing <code>Unavailable</code> string, restated independently in both catalog views instead of coming from the status abstraction.</p>
+              <span class="cite">candidate/resources/views/equipment/index.blade.php:22-26 · show.blade.php:3-7</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- minimax -->
+      <article class="run">
+        <div class="run-head">
+          <span class="name">minimax-m3 · high</span>
+          <span class="band solid">solid</span>
+          <span class="total">76.5<span> / 100</span></span>
+        </div>
+        <div class="sparks">
+          <div class="spark lost"><span class="c">D1</span><span class="s">8</span><div class="track"><div class="fill" style="width:53%"></div></div></div>
+          <div class="spark lost"><span class="c">D2</span><span class="s">11</span><div class="track"><div class="fill" style="width:61%"></div></div></div>
+          <div class="spark lost"><span class="c">D3</span><span class="s">11.5</span><div class="track"><div class="fill" style="width:82%"></div></div></div>
+          <div class="spark lost"><span class="c">D4</span><span class="s">10</span><div class="track"><div class="fill" style="width:83%"></div></div></div>
+          <div class="spark lost"><span class="c">D5</span><span class="s">11</span><div class="track"><div class="fill" style="width:92%"></div></div></div>
+          <div class="spark lost"><span class="c">D6</span><span class="s">10</span><div class="track"><div class="fill" style="width:91%"></div></div></div>
+          <div class="spark lost"><span class="c">D7</span><span class="s">7.5</span><div class="track"><div class="fill" style="width:75%"></div></div></div>
+          <div class="spark lost"><span class="c">D8</span><span class="s">7.5</span><div class="track"><div class="fill" style="width:94%"></div></div></div>
+        </div>
+        <div class="losses">
+          <div class="loss">
+            <div class="amt">−7.0<small>D1.3 + D1.4</small></div>
+            <div>
+              <h4>The submission ships red — because of its own test</h4>
+              <p>Pint is clean and PHPStan reports zero errors, but the test run and <code>composer test</code> both exit 1. The failure is the model's own pagination test: it uses random factory data and then assumes <code>Equipment::first()</code> lands on page one. Seven points, gone mechanically, with no judgment involved.</p>
+              <span class="cite">candidate/tests/Feature/Equipment/CatalogTest.php:59-107</span>
+            </div>
+          </div>
+          <div class="loss">
+            <div class="amt">−1.75<small>D2.4 + D2.12</small></div>
+            <div>
+              <h4>The same flaw, charged again where it belongs</h4>
+              <p>That one test costs twice more, in the criteria that own it: D2.4 −0.75 because the “exact pagination” test neither counts 20 records nor controls ordering, and D2.12 −1.0 because random data plus an insertion-order assertion makes the suite nondeterministic. The ledger keeps each consequence in exactly one place.</p>
+              <span class="cite">candidate/tests/Feature/Equipment/CatalogTest.php:28-57</span>
+            </div>
+          </div>
+          <div class="loss">
+            <div class="amt">−2.0<small>D4.2</small></div>
+            <div>
+              <h4>Five indexes, one useful query</h4>
+              <p>Only the <code>name</code> index serves a real access path. Category is a leading-wildcard search, status is never filtered, and user activity is re-read by primary key — four indexes with no phase-1 query behind them. Over-indexing is scored as harshly as under-indexing.</p>
+              <span class="cite">database/migrations/…_create_equipment_table.php:20-22</span>
+            </div>
+          </div>
+          <div class="loss">
+            <div class="amt">−1.5<small>D7.1</small></div>
+            <div>
+              <h4>Deactivation doesn't reach settings</h4>
+              <p>Activity is refreshed on the equipment routes, but the dashboard and every settings route sit outside <code>active.account</code>. A deactivated member keeps browsing their profile.</p>
+              <span class="cite">candidate/routes/settings.php:8-18</span>
+            </div>
+          </div>
+          <div class="loss">
+            <div class="amt">−1.25<small>D3.2</small></div>
+            <div>
+              <h4>Two form requests, byte-for-byte the same rules</h4>
+              <p><code>StoreEquipmentRequest</code> and <code>UpdateEquipmentRequest</code> duplicate the same authorization and the complete rule set rather than sharing one write boundary. Note the rubric doesn't punish <em>having</em> two requests — it punishes the copied rules.</p>
+              <span class="cite">app/Http/Requests/Admin/StoreEquipmentRequest.php:14-31</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- luna-low -->
+      <article class="run">
+        <div class="run-head">
+          <span class="name">gpt-5.6-luna · low effort</span>
+          <span class="band mixed">mixed</span>
+          <span class="total">65.375<span> / 100</span></span>
+        </div>
+        <div class="sparks">
+          <div class="spark lost"><span class="c">D1</span><span class="s">10</span><div class="track"><div class="fill" style="width:67%"></div></div></div>
+          <div class="spark lost"><span class="c">D2</span><span class="s">5.75</span><div class="track"><div class="fill" style="width:32%"></div></div></div>
+          <div class="spark lost"><span class="c">D3</span><span class="s">11.75</span><div class="track"><div class="fill" style="width:84%"></div></div></div>
+          <div class="spark lost"><span class="c">D4</span><span class="s">7</span><div class="track"><div class="fill" style="width:58%"></div></div></div>
+          <div class="spark lost"><span class="c">D5</span><span class="s">9</span><div class="track"><div class="fill" style="width:75%"></div></div></div>
+          <div class="spark full"><span class="c">D6</span><span class="s">11</span><div class="track"><div class="fill" style="width:100%"></div></div></div>
+          <div class="spark lost"><span class="c">D7</span><span class="s">8.5</span><div class="track"><div class="fill" style="width:85%"></div></div></div>
+          <div class="spark lost"><span class="c">D8</span><span class="s">2.375</span><div class="track"><div class="fill" style="width:30%"></div></div></div>
+        </div>
+        <div class="losses">
+          <div class="loss">
+            <div class="amt">−3.0<small>D4.1</small></div>
+            <div>
+              <h4>It edited the original users migration instead of adding one</h4>
+              <p><code>role</code> and <code>is_active</code> were inserted into the phase-0 <code>create_users_table</code> migration. On a fresh database everything works and every test passes — but any existing deployment will never receive those columns. The full 3 points go, and only the diff reveals it.</p>
+              <span class="cite">candidate/database/migrations/0001_01_01_000000_create_users_table.php:14-24</span>
+            </div>
+          </div>
+          <div class="loss">
+            <div class="amt">−5.625<small>D8, six criteria</small></div>
+            <div>
+              <h4>The admin UI is a shell</h4>
+              <p>No field-level validation errors on the shared form (−2.0). No flash status on any mutation (−1.5). No empty state on the admin list (−0.5). No visible delete control at all (−0.375) and therefore no confirmation either (−0.75). No navigation entry into the catalog (−0.5) — the first URL has to be typed by hand.</p>
+              <span class="cite">candidate/resources/views/admin/equipment/form.blade.php:1 · layouts/app/sidebar.blade.php:13-19</span>
+            </div>
+          </div>
+          <div class="loss">
+            <div class="amt">−12.25<small>D2, nine criteria</small></div>
+            <div>
+              <h4>One test file, most of the contract unprotected</h4>
+              <p>Registration and guest protection, admin read/write coverage, ordering and the 20-item boundary, category search, invalid-write state, rejected mutations, extra edges — all zero. What is there is deterministic and factory-backed (D2.12 keeps its point), just far too thin.</p>
+              <span class="cite">candidate/tests/Feature/EquipmentPhaseOneTest.php:3-25</span>
+            </div>
+          </div>
+          <div class="loss">
+            <div class="amt">−5.0<small>D1.2 + D1.4</small></div>
+            <div>
+              <h4>One PHPStan error, and a red <code>composer test</code></h4>
+              <p>PHPStan drops 6 points to 4 for a single error; <code>composer test</code> exiting 1 costs the whole 3. The gate does not care how small the error is.</p>
+              <span class="cite">quality-gates.md:44-52</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- gemini -->
+      <article class="run">
+        <div class="run-head">
+          <span class="name">gemini-3.1-pro · high</span>
+          <span class="band mixed">mixed</span>
+          <span class="total">62.75<span> / 100</span></span>
+        </div>
+        <div class="sparks">
+          <div class="spark lost"><span class="c">D1</span><span class="s">6</span><div class="track"><div class="fill" style="width:40%"></div></div></div>
+          <div class="spark lost"><span class="c">D2</span><span class="s">4.25</span><div class="track"><div class="fill" style="width:24%"></div></div></div>
+          <div class="spark lost"><span class="c">D3</span><span class="s">11.5</span><div class="track"><div class="fill" style="width:82%"></div></div></div>
+          <div class="spark lost"><span class="c">D4</span><span class="s">10</span><div class="track"><div class="fill" style="width:83%"></div></div></div>
+          <div class="spark lost"><span class="c">D5</span><span class="s">6</span><div class="track"><div class="fill" style="width:50%"></div></div></div>
+          <div class="spark lost"><span class="c">D6</span><span class="s">9.5</span><div class="track"><div class="fill" style="width:86%"></div></div></div>
+          <div class="spark lost"><span class="c">D7</span><span class="s">9</span><div class="track"><div class="fill" style="width:90%"></div></div></div>
+          <div class="spark lost"><span class="c">D8</span><span class="s">6.5</span><div class="track"><div class="fill" style="width:81%"></div></div></div>
+        </div>
+        <div class="losses">
+          <div class="loss">
+            <div class="amt">−9.0<small>D1.2 + D1.4</small></div>
+            <div>
+              <h4>Ten PHPStan errors takes the entire 6 points</h4>
+              <p>The scale is a cliff, not a slope: 0 errors scores 6, one or two still scores 4, three to nine scores 2 — and ten or more scores nothing. This submission landed on exactly 10. <code>composer test</code> exiting 1 removes the other 3.</p>
+              <span class="cite">quality-gates.md:9-18</span>
+            </div>
+          </div>
+          <div class="loss">
+            <div class="amt">−1.0<small>D5.2</small></div>
+            <div>
+              <h4>A published route that renders a view that doesn't exist</h4>
+              <p><code>Route::resource</code> publishes <code>admin.equipment.show</code>, and its action renders an <code>admin.equipment.show</code> view the repository never created. The behavioural tests never hit that route, so nothing else caught it.</p>
+              <span class="cite">candidate/app/Http/Controllers/Admin/EquipmentController.php:37-40</span>
+            </div>
+          </div>
+          <div class="loss">
+            <div class="amt">−2.0<small>D5.4</small></div>
+            <div>
+              <h4>Not one translated string</h4>
+              <p>Headings, labels, buttons, flash messages, the deactivation error and the deletion prompt — all raw literals. “Pervasive” is the bottom rung, so the criterion scores zero.</p>
+              <span class="cite">candidate/resources/views/admin/equipment/create.blade.php:3-37</span>
+            </div>
+          </div>
+          <div class="loss">
+            <div class="amt">−2.0<small>D5.1</small></div>
+            <div>
+              <h4>No return types on any new controller action</h4>
+              <p>Every new action omits its return type, and the search closures omit knowable types too — while the repository's own <code>AGENTS.md</code> asks for explicit typing. Violating the project's stated convention is what moves this from “isolated gaps” to zero.</p>
+              <span class="cite">candidate/AGENTS.md:90-99</span>
+            </div>
+          </div>
+          <div class="loss">
+            <div class="amt">−1.0<small>D2.12</small></div>
+            <div>
+              <h4>No Equipment factory at all</h4>
+              <p>Every fixture is hand-persisted inside the tests. It works, but it's why the tests are so thin: each new case costs real typing.</p>
+              <span class="cite">candidate/app/Models/Equipment.php:7-14</span>
+            </div>
+          </div>
+          <div class="loss">
+            <div class="amt">−1.0<small>D8.3</small></div>
+            <div>
+              <h4>Bare <code>foreach</code>, no empty state</h4>
+              <p>Both lists loop straight over the collection. An empty catalog renders as a blank page with no explanation.</p>
+              <span class="cite">candidate/resources/views/equipment/index.blade.php:11-23</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ============ 4. ONE CRITERION ACROSS FIVE ============ -->
+  <section id="cross">
+    <div class="shead"><h2>The same 0.75 points, five ways</h2><span class="lbl">D8.7 · delete safeguard</span></div>
+    <div class="cross">
+      <div class="cross-head">
+        <h3>“Destructive equipment deletion has a functioning confirmation or safeguard”</h3>
+        <p>Worth 0.75 — all or nothing. The rubric forbids crediting the <em>appearance</em> of one: an Alpine event attribute counts only if its component scope is traced or the interaction is actually run.</p>
+      </div>
+      <div class="cross-row"><span class="m">opus-5 · high</span><span class="sc y">0.75</span><span class="d">Native form <code>onsubmit</code> confirmation, traced in a dedicated <code>x-equipment.delete-button</code> component.</span></div>
+      <div class="cross-row"><span class="m">minimax-m3 · high</span><span class="sc y">0.75</span><span class="d">Native <code>onsubmit</code> confirmation on the delete form; judge recorded evidence level as source trace, no browser run.</span></div>
+      <div class="cross-row"><span class="m">gemini-3.1-pro · high</span><span class="sc y">0.75</span><span class="d">Confirmation present and cancellable — one of the few places this submission scored full marks.</span></div>
+      <div class="cross-row"><span class="m">sonnet-5 · medium</span><span class="sc n">0</span><span class="d">The delete form posts directly. No confirmation, no safeguard.</span></div>
+      <div class="cross-row"><span class="m">gpt-5.6-luna · low</span><span class="sc n">0</span><span class="d">No delete control is rendered at all, so there is nothing to confirm — D8.6 is charged separately for the missing control.</span></div>
+    </div>
+  </section>
+
+  <!-- ============ 5. BANDS ============ -->
+  <section id="bands">
+    <div class="shead"><h2>Grade bands</h2><span class="lbl">Where the total lands</span></div>
+    <div class="bands">
+      <div><span class="r">≥ 85</span><br><span class="n">Strong</span></div>
+      <div><span class="r">70 – 84.99</span><br><span class="n">Solid</span></div>
+      <div><span class="r">55 – 69.99</span><br><span class="n">Mixed</span></div>
+      <div><span class="r">40 – 54.99</span><br><span class="n">Weak</span></div>
+      <div><span class="r">&lt; 40</span><br><span class="n">Poor</span></div>
+    </div>
+    <p class="foot">All figures taken from recorded <code>phase1-code-quality-v2</code> judgments in <code>results/judgments/</code>. Judge: <code>gpt-5.6-sol</code> via the Codex CLI at medium reasoning effort, one judgment per submission, blinded to model identity and to every other submission. Rubric source: <code>evals/12-equipment-library/phase1-code-quality-eval.md</code>.</p>
+  </section>
+
+</div>
+</body>
+</html>
