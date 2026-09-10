@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="How a blinded judge model spends 100 points on a broken React controller — the rubric, two worked judgments, and how many runs a published number needs.">
+<style>
+  html { color-scheme: light dark; }
+  body { margin: 0; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+</style>
+<title>Support Inbox Scorecard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;700&display=swap">
+</head>
+<body>
+
+<style>
+  :root {
+    --paper:      #eceee9;
+    --surface:    #f7f8f5;
+    --surface-2:  #e2e5df;
+    --ink:        #16191c;
+    --ink-soft:   #4c5350;
+    --ink-faint:  #757c78;
+    --rule:       #c8ccc5;
+    --rule-hard:  #9aa197;
+    --teal:       #0d5a51;
+    --teal-soft:  #d6e5e1;
+    --rust:       #a83a1c;
+    --rust-soft:  #f2ded7;
+    --amber:      #8a6209;
+    --amber-soft: #f0e5cc;
+
+    --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    --f-body:    "Source Serif 4", Georgia, "Times New Roman", serif;
+    --f-mono:    "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #14171a;
+      --surface:    #1b1f22;
+      --surface-2:  #262b2e;
+      --ink:        #e8ebe6;
+      --ink-soft:   #b0b7b2;
+      --ink-faint:  #838a86;
+      --rule:       #333a3d;
+      --rule-hard:  #4d5559;
+      --teal:       #5fc9b6;
+      --teal-soft:  #163530;
+      --rust:       #f08b64;
+      --rust-soft:  #3a1e15;
+      --amber:      #d9ad4a;
+      --amber-soft: #33280f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:      #14171a;
+    --surface:    #1b1f22;
+    --surface-2:  #262b2e;
+    --ink:        #e8ebe6;
+    --ink-soft:   #b0b7b2;
+    --ink-faint:  #838a86;
+    --rule:       #333a3d;
+    --rule-hard:  #4d5559;
+    --teal:       #5fc9b6;
+    --teal-soft:  #163530;
+    --rust:       #f08b64;
+    --rust-soft:  #3a1e15;
+    --amber:      #d9ad4a;
+    --amber-soft: #33280f;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 19px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 32px 100px; }
+
+  h1, h2, h3, h4, .lbl, th, .mono { font-family: var(--f-display); }
+
+  .lbl {
+    font-size: 13px; font-weight: 600; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--ink-faint);
+  }
+
+  /* ---------- masthead ---------- */
+  .mast {
+    border-bottom: 3px solid var(--ink);
+    padding: 44px 0 28px;
+    display: grid; gap: 20px;
+  }
+  .mast h1 {
+    font-size: clamp(38px, 5.4vw, 64px);
+    line-height: 1.02; margin: 0; font-weight: 700;
+    letter-spacing: -0.025em; text-wrap: balance;
+  }
+  .mast .sub {
+    font-size: 21px; color: var(--ink-soft); max-width: 60ch; margin: 0;
+  }
+  .mast-meta {
+    display: flex; flex-wrap: wrap; gap: 10px 28px;
+    padding-top: 6px; border-top: 1px solid var(--rule);
+  }
+  .mast-meta div { display: flex; gap: 9px; align-items: baseline; }
+  .mast-meta .v { font-family: var(--f-mono); font-size: 15px; color: var(--ink); }
+
+  /* ---------- pipeline strip ---------- */
+  .pipe {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+    background: var(--rule); border: 1px solid var(--rule);
+    margin: 36px 0 10px;
+  }
+  .pipe > div { background: var(--surface); padding: 16px 18px; }
+  .pipe .n {
+    font-family: var(--f-mono); font-size: 13px; font-weight: 700;
+    color: var(--teal); display: block; margin-bottom: 4px;
+  }
+  .pipe p { margin: 0; font-size: 16.5px; line-height: 1.45; color: var(--ink-soft); }
+  .pipe strong { color: var(--ink); font-weight: 600; }
+
+  /* ---------- section headers ---------- */
+  section { padding-top: 66px; }
+  .shead { display: flex; align-items: baseline; gap: 16px; border-bottom: 2px solid var(--ink); padding-bottom: 10px; margin-bottom: 26px; }
+  .shead h2 { margin: 0; font-size: clamp(26px, 3vw, 34px); letter-spacing: -0.02em; }
+  .shead .lbl { margin-left: auto; }
+
+  /* ---------- weight bar ---------- */
+  .bar { display: flex; height: 68px; border: 1px solid var(--ink); overflow: hidden; }
+  .bar div {
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    border-right: 1px solid var(--ink); color: var(--ink);
+    background: var(--surface); gap: 1px;
+  }
+  .bar div:last-child { border-right: 0; }
+  .bar .code { font-family: var(--f-mono); font-weight: 700; font-size: 16px; }
+  .bar .pts { font-family: var(--f-mono); font-size: 13px; color: var(--ink-soft); }
+  .bar .t1 { background: var(--teal-soft); }
+  .bar .t2 { background: var(--surface-2); }
+  .barcap { display: flex; justify-content: space-between; margin-top: 8px; }
+  .barcap span { font-size: 15px; color: var(--ink-faint); font-family: var(--f-mono); }
+
+  /* ---------- dimension tiles ---------- */
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(258px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-top: 30px; }
+  .tile { background: var(--surface); padding: 20px; display: grid; gap: 8px; align-content: start; }
+  .tile .top { display: flex; align-items: baseline; justify-content: space-between; }
+  .tile .code { font-family: var(--f-mono); font-weight: 700; font-size: 15px; color: var(--teal); }
+  .tile .max { font-family: var(--f-display); font-weight: 700; font-size: 30px; font-variant-numeric: tabular-nums; }
+  .tile h3 { margin: 0; font-size: 19px; letter-spacing: -0.01em; }
+  .tile p { margin: 0; font-size: 16px; line-height: 1.45; color: var(--ink-soft); }
+
+  /* ---------- criteria tables ---------- */
+  .dim { margin-bottom: 44px; }
+  .dim-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; border-bottom: 1px solid var(--rule-hard); padding-bottom: 8px; margin-bottom: 4px; }
+  .dim-head h3 { margin: 0; font-size: 24px; letter-spacing: -0.015em; }
+  .dim-head .code { font-family: var(--f-mono); font-weight: 700; color: var(--teal); font-size: 17px; }
+  .dim-head .max { margin-left: auto; font-family: var(--f-mono); font-size: 17px; font-weight: 700; }
+  .dim > .note { font-size: 16px; color: var(--ink-faint); margin: 10px 0 14px; max-width: 78ch; }
+
+  .tbl-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 620px; }
+  th {
+    text-align: left; font-size: 12.5px; letter-spacing: .13em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 600; padding: 12px 12px 8px; border-bottom: 1px solid var(--rule-hard);
+  }
+  td { padding: 12px; border-bottom: 1px solid var(--rule); vertical-align: top; font-size: 17px; line-height: 1.45; }
+  tr:last-child td { border-bottom: 0; }
+  td.id { font-family: var(--f-mono); font-size: 15px; color: var(--ink-faint); width: 62px; white-space: nowrap; }
+  td.p { font-family: var(--f-mono); font-size: 15px; white-space: nowrap; width: 150px; font-variant-numeric: tabular-nums; }
+  td.p b { color: var(--teal); }
+  .neg { color: var(--rust); font-family: var(--f-mono); font-weight: 700; }
+
+  /* ---------- example cards ---------- */
+  .runs { display: grid; gap: 26px; }
+  .run { border: 1px solid var(--rule-hard); background: var(--surface); }
+  .run-head {
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    padding: 18px 22px; border-bottom: 1px solid var(--rule-hard);
+  }
+  .run-head .name { font-family: var(--f-mono); font-weight: 700; font-size: 19px; }
+  .run-head .total { font-family: var(--f-display); font-weight: 700; font-size: 34px; margin-left: auto; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  .run-head .total span { font-size: 17px; color: var(--ink-faint); font-weight: 500; }
+  .band { font-family: var(--f-mono); font-size: 12.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: 4px 10px; border: 1px solid currentColor; }
+  .band.strong { color: var(--teal); }
+  .band.solid  { color: var(--amber); }
+  .band.mixed  { color: var(--rust); }
+
+  .sparks { display: grid; grid-template-columns: repeat(8, 1fr); gap: 1px; background: var(--rule); border-bottom: 1px solid var(--rule-hard); }
+  .spark { background: var(--surface); padding: 12px 8px 10px; text-align: center; display: grid; gap: 6px; }
+  .spark .c { font-family: var(--f-mono); font-size: 12.5px; color: var(--ink-faint); }
+  .spark .s { font-family: var(--f-mono); font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .spark .track { height: 6px; background: var(--surface-2); }
+  .spark .fill { height: 6px; background: var(--teal); }
+  .spark.lost .s { color: var(--rust); }
+  .spark.lost .fill { background: var(--rust); }
+  .spark.full .s { color: var(--teal); }
+
+  .losses { padding: 6px 22px 20px; }
+  .loss { display: grid; grid-template-columns: 92px 1fr; gap: 18px; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+  .loss:last-child { border-bottom: 0; }
+  .loss .amt { font-family: var(--f-mono); font-weight: 700; font-size: 20px; color: var(--rust); text-align: right; font-variant-numeric: tabular-nums; }
+  .loss .amt small { display: block; font-size: 12px; color: var(--ink-faint); font-weight: 400; letter-spacing: .08em; margin-top: 2px; }
+  .loss h4 { margin: 0 0 5px; font-size: 18.5px; }
+  .loss p { margin: 0 0 8px; font-size: 17px; color: var(--ink-soft); line-height: 1.5; }
+  .cite {
+    font-family: var(--f-mono); font-size: 14px; color: var(--ink-faint);
+    background: var(--surface-2); padding: 3px 8px; display: inline-block; word-break: break-all;
+  }
+  .kept { border-left: 3px solid var(--teal); padding-left: 14px; margin: 2px 0 0; }
+  .kept .amt { color: var(--teal); }
+
+  /* ---------- one criterion, five repos ---------- */
+  .cross { border: 1px solid var(--rule-hard); background: var(--surface); }
+  .cross-head { padding: 18px 22px; border-bottom: 1px solid var(--rule-hard); }
+  .cross-head h3 { margin: 0 0 4px; font-size: 21px; }
+  .cross-head p { margin: 0; font-size: 16.5px; color: var(--ink-soft); }
+  .cross-row { display: grid; grid-template-columns: 210px 78px 1fr; gap: 16px; padding: 14px 22px; border-bottom: 1px solid var(--rule); align-items: baseline; }
+  .cross-row:last-child { border-bottom: 0; }
+  .cross-row .m { font-family: var(--f-mono); font-size: 15.5px; }
+  .cross-row .sc { font-family: var(--f-mono); font-weight: 700; font-size: 16px; font-variant-numeric: tabular-nums; }
+  .cross-row .sc.y { color: var(--teal); }
+  .cross-row .sc.n { color: var(--rust); }
+  .cross-row .d { font-size: 16.5px; color: var(--ink-soft); }
+
+  /* ---------- bands footer ---------- */
+  .bands { display: grid; grid-template-columns: repeat(auto-fit, minmax(148px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .bands div { background: var(--surface); padding: 16px 18px; }
+  .bands .r { font-family: var(--f-mono); font-weight: 700; font-size: 19px; }
+  .bands .n { font-size: 15px; color: var(--ink-faint); letter-spacing: .1em; text-transform: uppercase; font-family: var(--f-display); font-weight: 600; }
+
+  .foot { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--rule); font-size: 15.5px; color: var(--ink-faint); }
+
+  @media (max-width: 800px) {
+    body { font-size: 17px; }
+    .wrap { padding: 0 18px 70px; }
+    .pipe { grid-template-columns: 1fr 1fr; }
+    .sparks { grid-template-columns: repeat(4, 1fr); }
+    .loss { grid-template-columns: 1fr; gap: 6px; }
+    .loss .amt { text-align: left; }
+    .cross-row { grid-template-columns: 1fr; gap: 4px; }
+  }
+
+  /* ---------- trace map + matrix (eval 13) ---------- */
+  .split { display: grid; grid-template-columns: 1.35fr 1fr; gap: 30px; align-items: start; }
+  @media (max-width: 900px) { .split { grid-template-columns: 1fr; } }
+
+  .calib { border: 1px solid var(--rule-hard); background: var(--surface); }
+  .calib h3 { margin: 0; padding: 16px 20px 14px; font-size: 19px; border-bottom: 1px solid var(--rule-hard); }
+  .calib .row { display: flex; align-items: baseline; gap: 14px; padding: 15px 20px; border-bottom: 1px solid var(--rule); }
+  .calib .row:last-of-type { border-bottom: 0; }
+  .calib .who { font-family: var(--f-mono); font-size: 15px; }
+  .calib .n { margin-left: auto; font-family: var(--f-mono); font-weight: 700; font-size: 19px; font-variant-numeric: tabular-nums; }
+  .calib .n.lo { color: var(--rust); }
+  .calib .n.hi { color: var(--teal); }
+  .calib .why { padding: 14px 20px 18px; margin: 0; font-size: 16px; color: var(--ink-soft); border-top: 1px solid var(--rule-hard); }
+
+  .mx { overflow-x: auto; }
+  .mx table { min-width: 720px; }
+  .mx th.m, .mx td.m { text-align: center; width: 96px; font-family: var(--f-mono); }
+  .mx td.m { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .mx td.owner { font-family: var(--f-mono); font-size: 14px; color: var(--teal); width: 66px; }
+  .mx td.trace { font-size: 16.5px; }
+  .pass { color: var(--teal); }
+  .fail { color: var(--rust); }
+  .mx tr.tot td { border-top: 2px solid var(--ink); border-bottom: 0; font-weight: 700; }
+  .mx tr.tot td.m { font-size: 17px; }
+
+  /* ---------- findings ---------- */
+  .finds { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .find { background: var(--surface); padding: 22px; display: grid; grid-template-columns: 60px 1fr; gap: 20px; align-items: start; }
+  .find .k { font-family: var(--f-mono); font-weight: 700; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; padding: 4px 0; }
+  .find.good .k { color: var(--teal); }
+  .find.warn .k { color: var(--amber); }
+  .find.risk .k { color: var(--rust); }
+  .find h3 { margin: 0 0 6px; font-size: 20px; letter-spacing: -0.01em; }
+  .find p { margin: 0 0 8px; font-size: 17px; color: var(--ink-soft); line-height: 1.5; }
+  .find p:last-child { margin-bottom: 0; }
+  @media (max-width: 620px) { .find { grid-template-columns: 1fr; gap: 8px; } }
+
+  .verdictbox { border: 3px solid var(--ink); background: var(--surface); padding: 26px 28px; margin-top: 30px; }
+  .verdictbox .lbl { display: block; margin-bottom: 8px; }
+  .verdictbox p { margin: 0 0 12px; font-size: 18.5px; line-height: 1.55; max-width: 74ch; }
+  .verdictbox p:last-child { margin-bottom: 0; }
+
+  .sparks.six { grid-template-columns: repeat(6, 1fr); }
+  .runmeta { display: flex; flex-wrap: wrap; gap: 6px 22px; padding: 12px 22px; border-bottom: 1px solid var(--rule); background: var(--surface-2); }
+  .runmeta span { font-family: var(--f-mono); font-size: 13.5px; color: var(--ink-soft); }
+  .runmeta b { color: var(--ink); font-weight: 700; }
+
+  /* six dimensions fill a 3x2 grid exactly; no dead cells */
+  .tiles { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 880px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .tiles { grid-template-columns: 1fr; } }
+
+  /* ---------- D5 ladder ---------- */
+  .ladder { border: 1px solid var(--rule-hard); background: var(--surface); margin: 18px 0 14px; }
+  .ladder .lbl { display: block; padding: 14px 18px 12px; border-bottom: 1px solid var(--rule-hard); }
+  .ladder .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--rule); }
+  .ladder .steps > div { background: var(--surface); padding: 16px 18px; display: grid; grid-template-columns: 46px 1fr; gap: 14px; align-items: start; }
+  .ladder .steps b { font-family: var(--f-mono); font-size: 22px; color: var(--teal); font-variant-numeric: tabular-nums; }
+  .ladder .steps p { margin: 0; font-size: 16px; line-height: 1.45; color: var(--ink-soft); }
+  .ladder .why { margin: 0; padding: 14px 18px 16px; border-top: 1px solid var(--rule-hard); font-size: 16px; color: var(--ink-faint); }
+  @media (max-width: 820px) { .ladder .steps { grid-template-columns: 1fr; } }
+
+  .verdictbox + .verdictbox { margin-top: 22px; }
+  .verdictbox table { min-width: 560px; }
+  .mx table th.m, .mx table td.m { width: 104px; }
+</style>
+
+<div class="wrap">
+
+  <header class="mast">
+    <div>
+      <div class="lbl">Eval 13 · phase 1 · judge <code>phase1-inbox-repair-v4</code></div>
+      <h1>How I measure a model on a broken React controller</h1>
+    </div>
+    <p class="sub">This eval does not ask a model to build a feature. It hands over <em>a working app with four production incidents in it</em> and asks for the repair — then scores whether the fix has real ownership boundaries or is just a controller that got longer. This page is the method, not a ranking.</p>
+    <div class="mast-meta">
+      <div><span class="lbl">Task</span><span class="v">13-support-inbox</span></div>
+      <div><span class="lbl">Judge</span><span class="v">gpt-5.6-sol · codex · medium</span></div>
+      <div><span class="lbl">Rubric</span><span class="v">6 dimensions · 18 criteria</span></div>
+      <div><span class="lbl">Hidden traces</span><span class="v">11</span></div>
+      <div><span class="lbl">Cost per run</span><span class="v">$0.24 – $3.50 all-in</span></div>
+    </div>
+  </header>
+
+  <div class="pipe">
+    <div><span class="n">STEP 1</span><p>A model inherits a <strong>189-line React controller that works in ordinary use</strong> and a brief describing four incidents in operator language — no mechanism names, no file names.</p></div>
+    <div><span class="n">STEP 2</span><p>The harness records the gates — <strong>typecheck, lint, supplied tests, production build</strong> — then runs <strong>eleven hidden Vitest traces</strong> the model never sees.</p></div>
+    <div><span class="n">STEP 3</span><p>A blinded judge gets <strong>only the diff</strong>, the gate results and the named trace outcomes. No model name, no other submission, no ranking.</p></div>
+    <div><span class="n">STEP 4</span><p>The judge fills a worksheet: every criterion scored <strong>5 / 2.5 / 0</strong>, a <strong>deduction ledger</strong> so one root cause is charged exactly once, and a <code>file:line</code> for every point withheld.</p></div>
+  </div>
+
+  <!-- ============ 1. THE MAP ============ -->
+  <section id="map">
+    <div class="shead"><h2>The 100 points, at a glance</h2><span class="lbl">Zoom-out view</span></div>
+
+    <div class="bar">
+      <div class="t1" style="width:10%"><span class="code">D1</span><span class="pts">10</span></div>
+      <div class="t2" style="width:20%"><span class="code">D2</span><span class="pts">20</span></div>
+      <div class="t1" style="width:25%"><span class="code">D3</span><span class="pts">25</span></div>
+      <div class="t2" style="width:20%"><span class="code">D4</span><span class="pts">20</span></div>
+      <div class="t1" style="width:20%"><span class="code">D5</span><span class="pts">20</span></div>
+      <div class="t2" style="width:5%"><span class="code">D6</span><span class="pts">5</span></div>
+    </div>
+    <div class="barcap">
+      <span>0</span><span>65 pts — did the four incidents actually get fixed? (D2+D3+D4)</span><span>100</span>
+    </div>
+
+    <div class="tiles">
+      <div class="tile">
+        <div class="top"><span class="code">D1</span><span class="max">10</span></div>
+        <h3>Verification gate</h3>
+        <p>Mechanical. Typecheck 3, lint 2, supplied tests 2, build 3. The judge copies the recorded total and does not argue with it.</p>
+      </div>
+      <div class="tile">
+        <div class="top"><span class="code">D2</span><span class="max">20</span></div>
+        <h3>State &amp; lifecycle ownership</h3>
+        <p>Does every piece of state have exactly one owner — or do refs and React state mirror each other and need callbacks to stay in step?</p>
+      </div>
+      <div class="tile">
+        <div class="top"><span class="code">D3</span><span class="max">25</span></div>
+        <h3>Search &amp; navigation resilience</h3>
+        <p>The biggest slice, because six of the eleven traces land here. Newest intent owns the results; history records only what a person did.</p>
+      </div>
+      <div class="tile">
+        <div class="top"><span class="code">D4</span><span class="max">20</span></div>
+        <h3>Optimistic mutation consistency</h3>
+        <p>Two operators updating two tickets at once. Whose spinner, whose error, and what happens when a slow search lands on a confirmed change.</p>
+      </div>
+      <div class="tile">
+        <div class="top"><span class="code">D5</span><span class="max">20</span></div>
+        <h3>Feature architecture</h3>
+        <p>Location, search and mutation each need one reviewable boundary. Working behaviour alone earns nothing here.</p>
+      </div>
+      <div class="tile">
+        <div class="top"><span class="code">D6</span><span class="max">5</span></div>
+        <h3>Types &amp; supplied boundaries</h3>
+        <p>Supplied contracts used precisely. No <code>any</code>, no suppressions, no new dependencies, no edits outside the allowed paths.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 2. THE DIMENSIONS ============ -->
+  <section id="detail">
+    <div class="shead"><h2>Inside each dimension</h2><span class="lbl">Criterion by criterion</span></div>
+    <p class="note" style="max-width:78ch;margin:-8px 0 30px;color:var(--ink-soft);font-size:17.5px">Every criterion in D2–D6 is worth <strong>5 points</strong> and scores <strong>strong 5 · mixed 2.5 · weak 0</strong>. Mixed is for a localised limitation with no demonstrated invariant violation — the rubric says explicitly that it is <em>not</em> a default for criteria with several clauses.</p>
+
+    <!-- D1 -->
+    <div class="dim">
+      <div class="dim-head"><span class="code">D1</span><h3>Verification gate</h3><span class="max">max 10</span></div>
+      <p class="note">The one dimension the judge does not think about. Four commands, four exit codes. A submission that fails one gate can still finish ahead of one that passes all four — the other 90 points decide that.</p>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>#</th><th>Criterion</th><th>Points</th></tr></thead>
+        <tbody>
+          <tr><td class="id">D1.1</td><td><code>npm run typecheck</code> passes</td><td class="p"><b>3</b> / 0</td></tr>
+          <tr><td class="id">D1.2</td><td><code>npm run lint</code> passes with <code>--max-warnings 0</code></td><td class="p"><b>2</b> / 0</td></tr>
+          <tr><td class="id">D1.3</td><td>Supplied test suite passes</td><td class="p"><b>2</b> / 0</td></tr>
+          <tr><td class="id">D1.4</td><td><code>npm run build</code> produces a production bundle</td><td class="p"><b>3</b> / 0</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <!-- D2 -->
+    <div class="dim">
+      <div class="dim-head"><span class="code">D2</span><h3>React state and lifecycle ownership</h3><span class="max">max 20</span></div>
+      <p class="note">The inherited controller keeps four mutable refs alongside eight pieces of React state. The question is not whether the repair still works — it is whether anything still has to be manually kept in sync.</p>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>#</th><th>Criterion</th><th>Points</th></tr></thead>
+        <tbody>
+          <tr><td class="id">D2.1</td><td>Values the view can derive — the selected ticket, its pending status, which feedback is visible — are computed at render rather than stored in state and kept up to date. <em>Derived-versus-stored only; a duplicated owner of the same value is D2.2</em></td><td class="p"><b>5</b> · 2.5 · 0</td></tr>
+          <tr><td class="id">D2.2</td><td>Mutable refs and React state do not form competing mirrors that require unrelated callbacks to keep them in step</td><td class="p"><b>5</b> · 2.5 · 0</td></tr>
+          <tr><td class="id">D2.3</td><td>Effects and external subscriptions express one synchronisation purpose, with complete dependencies and symmetric cleanup</td><td class="p"><b>5</b> · 2.5 · 0</td></tr>
+          <tr><td class="id">D2.4</td><td>Strict Mode replay, unmount and remount cannot duplicate durable effects, skip the first useful request, or leave disposed work able to publish</td><td class="p"><b>5</b> · 2.5 · 0</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <!-- D3 -->
+    <div class="dim">
+      <div class="dim-head"><span class="code">D3</span><h3>Search and navigation resilience</h3><span class="max">max 25</span></div>
+      <p class="note">The deterministic API is built so that completion order is observable without a network: some queries cross a cancellation boundary before they settle, so <em>aborting them changes nothing</em>. A repair that only calls <code>abort()</code> cannot pass D3.1.</p>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>#</th><th>Criterion</th><th>Points</th></tr></thead>
+        <tbody>
+          <tr><td class="id">D3.1</td><td>The newest intent exclusively owns results, errors and loading completion; superseded work cannot publish, including requests already past the cancellation boundary</td><td class="p"><b>5</b> · 2.5 · 0</td></tr>
+          <tr><td class="id">D3.2</td><td>Retry belongs to the intent that produced the error; a later control or navigation change revokes it rather than replaying stale criteria</td><td class="p"><b>5</b> · 2.5 · 0</td></tr>
+          <tr><td class="id">D3.3</td><td>Existing results and the open conversation stay usable while replacement work waits or fails; the ordinary loading, empty, error and Retry flows still behave as supplied</td><td class="p"><b>5</b> · 2.5 · 0</td></tr>
+          <tr><td class="id">D3.4</td><td>URL initialisation and later writes normalise owned values, reflect current controls immediately, and preserve unrelated parameters</td><td class="p"><b>5</b> · 2.5 · 0</td></tr>
+          <tr><td class="id">D3.5</td><td>History records only operator selection as a new entry; control changes and automatic fallback replace it, and Back/Forward restore intent without loops, duplicates or stale pre-navigation publication</td><td class="p"><b>5</b> · 2.5 · 0</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <!-- D4 -->
+    <div class="dim">
+      <div class="dim-head"><span class="code">D4</span><h3>Optimistic mutation consistency</h3><span class="max">max 20</span></div>
+      <p class="note">Status changes have ticket-specific latency and one deterministic failure. The inherited controller blocks <em>all</em> mutations while any one is in flight and keeps a single feedback object, so notices attach to whichever ticket is selected.</p>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>#</th><th>Criterion</th><th>Points</th></tr></thead>
+        <tbody>
+          <tr><td class="id">D4.1</td><td>List and detail share one immediate optimistic value; failure restores the exact owned snapshot and success reconciles the server ticket</td><td class="p"><b>5</b> · 2.5 · 0</td></tr>
+          <tr><td class="id">D4.2</td><td>Pending state and progress, success or failure feedback are owned per ticket and survive selection changes</td><td class="p"><b>5</b> · 2.5 · 0</td></tr>
+          <tr><td class="id">D4.3</td><td>A repeated change to a ticket with an update in flight starts no second request, while different tickets settle independently without overwriting one another</td><td class="p"><b>5</b> · 2.5 · 0</td></tr>
+          <tr><td class="id">D4.4</td><td>Search snapshots and mutation outcomes compose in either completion order without erasing pending or already confirmed values</td><td class="p"><b>5</b> · 2.5 · 0</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <!-- D5 -->
+    <div class="dim">
+      <div class="dim-head"><span class="code">D5</span><h3>Feature architecture and maintainability</h3><span class="max">max 20</span></div>
+      <p class="note">The only dimension where passing every trace earns nothing. The rubric states it directly: <em>full D5 credit requires genuinely separated ownership boundaries; working behaviour alone is insufficient.</em></p>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>#</th><th>Criterion</th><th>Points</th></tr></thead>
+        <tbody>
+          <tr><td class="id">D5.1</td><td>Location parsing, normalisation, history writes and the popstate subscription form one focused boundary rather than browser mutations scattered across effects</td><td class="p"><b>5</b> · 2.5 · 0</td></tr>
+          <tr><td class="id">D5.2</td><td>Search scheduling, invalidation and publication policy have one reviewable transaction boundary rather than duplicated promise branches and incidental refs</td><td class="p"><b>5</b> · 2.5 · 0</td></tr>
+          <tr><td class="id">D5.3</td><td>Optimistic overlay, rollback, reconciliation and feedback policy have one ticket-keyed boundary rather than singleton or callback-local ownership</td><td class="p"><b>5</b> · 2.5 · 0</td></tr>
+          <tr><td class="id">D5.4</td><td>Given whatever boundaries the repair established, the composition layer itself is sound: no pass-through wrappers, dead indirection or speculative machinery, and names that state the invariants. <em>Never charge a missing boundary here — that is D5.1–D5.3</em></td><td class="p"><b>5</b> · 2.5 · 0</td></tr>
+        </tbody>
+      </table></div>
+      <div class="ladder">
+        <span class="lbl">Scoring D5.1–D5.3 — a three-step ladder, not a yes/no</span>
+        <div class="steps">
+          <div><b>5</b><p>The concern is extracted and owns its state. A reader changes it in one place.</p></div>
+          <div><b>2.5</b><p>Partly extracted: named module-level helpers exist and centralise part of the concern, but ownership still leaks back through refs, effects or callbacks.</p></div>
+          <div><b>0</b><p>Still inline, with no extraction beyond incidental local functions.</p></div>
+        </div>
+        <p class="why">A generic utility carrying no policy — an abort-error predicate, a parameter setter used once — is incidental and does not on its own lift a criterion to 2.5. This ladder is the whole difference between the v3 and v4 rubrics, and the reason D5 grades degree rather than counting files.</p>
+      </div>
+      <p class="note" style="border-left:3px solid var(--rust);padding-left:14px;color:var(--ink-soft)"><strong>Generality check — mechanical.</strong> The judge greps the diff for the supplied fixture literals (<code>'billing'</code>, <code>'invoice'</code>, <code>'timeout'</code>, <code>'offline'</code>, any <code>TKT-</code> id) and for latency constants copied out of the API (<code>520</code>, <code>220</code>, <code>120</code>, <code>240</code>, <code>80</code>). Control flow branching on any of them is a fixture-specific patch, not a repair: the boundary criterion it sits in scores <strong>0</strong>. No submission has tripped it so far.</p>
+    </div>
+
+    <!-- D6 -->
+    <div class="dim">
+      <div class="dim-head"><span class="code">D6</span><h3>TypeScript and supplied boundaries</h3><span class="max">max 5</span></div>
+      <p class="note">One criterion, scored 5 / 2.5 / 0.</p>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>#</th><th>Criterion</th><th>Points</th></tr></thead>
+        <tbody>
+          <tr><td class="id">D6.1</td><td>Supplied domain, controller, API and browser contracts used precisely — no <code>any</code>, unsafe casts or assertions, duplicated status vocabularies, new dependencies, <code>eslint-disable</code> or <code>@ts-</code> suppressions, and no changes outside the two permitted paths</td><td class="p"><b>5</b> · 2.5 · 0</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- ============ 3. THE TRACES ============ -->
+  <section id="traces">
+    <div class="shead"><h2>The eleven hidden traces</h2><span class="lbl">And which criterion owns each</span></div>
+    <p class="note" style="max-width:78ch;margin:-8px 0 26px;color:var(--ink-soft);font-size:17.5px">Naming the owner of every trace in the rubric is what stops the same failure being re-attributed to a different dimension on a re-run. A failed trace forces its criterion to <strong>0, not mixed</strong>. A passing trace is <em>not</em> automatically full credit — a source-level counterexample still forces 0, and some of the largest deductions on record come from defects no trace caught.</p>
+
+    <div class="split">
+      <div class="mx"><table>
+        <thead><tr><th>Owner</th><th>Hidden trace</th></tr></thead>
+        <tbody>
+          <tr><td class="owner">D3.3</td><td class="trace">keeps the ordinary load, selection, failure and Retry workflow intact</td></tr>
+          <tr><td class="owner">D3.1</td><td class="trace">does not publish an obsolete successful search during later intent</td></tr>
+          <tr><td class="owner">D3.1</td><td class="trace">does not publish an obsolete search failure or completion</td></tr>
+          <tr><td class="owner">D3.2</td><td class="trace">revokes Retry when the operator changes intent</td></tr>
+          <tr><td class="owner">D4.2</td><td class="trace">owns concurrent progress and outcomes by ticket</td></tr>
+          <tr><td class="owner">D4.4</td><td class="trace">does not let an older server snapshot undo a confirmed mutation</td></tr>
+          <tr><td class="owner">D3.4</td><td class="trace">restores a shared URL without rewriting history or unrelated parameters</td></tr>
+          <tr><td class="owner">D3.4</td><td class="trace">writes normalised control intent immediately without discarding URL state</td></tr>
+          <tr><td class="owner">D3.5</td><td class="trace">pushes a user selection once and replaces automatic fallback</td></tr>
+          <tr><td class="owner">D3.5</td><td class="trace">Back and Forward restore intent while rejecting pre-navigation work</td></tr>
+          <tr><td class="owner">D2.4</td><td class="trace">starts useful work immediately after Strict Mode lifecycle replay</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="calib">
+        <h3>Calibration</h3>
+        <div class="row"><span class="who">inherited seed</span><span class="n lo">1 / 11</span></div>
+        <div class="row"><span class="who">held calibration repair</span><span class="n hi">11 / 11</span></div>
+        <p class="why">Both pass <code>npm run verify</code>, so both score <strong>10/10 on D1</strong>. The floor is deliberate: a model that changes nothing banks the whole verification gate and still cannot clear 10 points elsewhere. Every point of separation has to come from D2–D6.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4. TWO JUDGMENTS ============ -->
+  <section id="examples">
+    <div class="shead"><h2>What one judgment looks like</h2><span class="lbl">Two real worksheets</span></div>
+    <p class="note" style="max-width:78ch;margin:-8px 0 26px;color:var(--ink-soft);font-size:17.5px">These two are picked to show what the rubric adds over a test run. One passed <strong>every hidden trace and still lost 12.5 points</strong>; the other <strong>failed two traces and still scored respectably</strong>, because it built real boundaries. Neither tests alone nor architecture alone decides the number.</p>
+
+    <div class="runs">
+
+      <article class="run">
+        <div class="run-head">
+          <span class="name">A · every trace passed</span>
+          <span class="band solid">solid</span>
+          <span class="total">82.50<span> / 100</span></span>
+        </div>
+        <div class="runmeta">
+          <span>traces <b>11 / 11</b></span><span>gates <b>4 / 4</b></span><span>files changed <b>1</b></span><span>diff <b>+242 / −102</b></span><span>time <b>502 s</b></span>
+        </div>
+        <div class="sparks six">
+          <div class="spark full"><span class="c">D1</span><span class="s">10</span><div class="track"><div class="fill" style="width:100%"></div></div></div>
+          <div class="spark lost"><span class="c">D2</span><span class="s">15</span><div class="track"><div class="fill" style="width:75%"></div></div></div>
+          <div class="spark full"><span class="c">D3</span><span class="s">25</span><div class="track"><div class="fill" style="width:100%"></div></div></div>
+          <div class="spark full"><span class="c">D4</span><span class="s">20</span><div class="track"><div class="fill" style="width:100%"></div></div></div>
+          <div class="spark lost"><span class="c">D5</span><span class="s">7.5</span><div class="track"><div class="fill" style="width:38%"></div></div></div>
+          <div class="spark full"><span class="c">D6</span><span class="s">5</span><div class="track"><div class="fill" style="width:100%"></div></div></div>
+        </div>
+        <div class="losses">
+          <div class="loss kept">
+            <div class="amt">45 / 45<small>D3 + D4</small></div>
+            <div>
+              <h4>Behaviourally flawless</h4>
+              <p>“Every intent receives a generation ID checked before publication; obsolete requests are aborted and rejected even after resolution… each mutation retains an exact rollback ticket that is refreshed by intervening search snapshots.” All eleven traces green.</p>
+            </div>
+          </div>
+          <div class="loss">
+            <div class="amt">−12.5<small>D5</small></div>
+            <div>
+              <h4>One file, three missing boundaries</h4>
+              <p>The entire repair landed in <code>useTicketInbox.ts</code>. Search scheduling and mutation policy never became owning boundaries — <em>“generic replacement and map-copy helpers do not own the policy”</em> — so D5.2 and D5.3 score 0 and D5.1 takes a half-step for its partial URL helpers.</p>
+              <span class="cite">candidate/src/features/tickets/useTicketInbox.ts:79-127</span>
+            </div>
+          </div>
+          <div class="loss">
+            <div class="amt">−5<small>D2.2</small></div>
+            <div>
+              <h4>Ref mirrors kept in step by hand</h4>
+              <p>“Inbox and ticket state have competing ref mirrors maintained through dedicated commit callbacks and separately synchronized during popstate.”</p>
+              <span class="cite">candidate/src/features/tickets/useTicketInbox.ts:36-39</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="run">
+        <div class="run-head">
+          <span class="name">B · two traces failed</span>
+          <span class="band solid">solid</span>
+          <span class="total">75.00<span> / 100</span></span>
+        </div>
+        <div class="runmeta">
+          <span>traces <b>9 / 11</b></span><span>gates <b>4 / 4</b></span><span>files changed <b>7</b></span><span>diff <b>+487 / −165</b></span><span>time <b>467 s</b></span>
+        </div>
+        <div class="sparks six">
+          <div class="spark full"><span class="c">D1</span><span class="s">10</span><div class="track"><div class="fill" style="width:100%"></div></div></div>
+          <div class="spark lost"><span class="c">D2</span><span class="s">10</span><div class="track"><div class="fill" style="width:50%"></div></div></div>
+          <div class="spark lost"><span class="c">D3</span><span class="s">20</span><div class="track"><div class="fill" style="width:80%"></div></div></div>
+          <div class="spark lost"><span class="c">D4</span><span class="s">15</span><div class="track"><div class="fill" style="width:75%"></div></div></div>
+          <div class="spark lost"><span class="c">D5</span><span class="s">15</span><div class="track"><div class="fill" style="width:75%"></div></div></div>
+          <div class="spark full"><span class="c">D6</span><span class="s">5</span><div class="track"><div class="fill" style="width:100%"></div></div></div>
+        </div>
+        <div class="losses">
+          <div class="loss">
+            <div class="amt">−5<small>D3.1 · L3</small></div>
+            <div>
+              <h4>A failed trace forces the criterion to zero</h4>
+              <p>“Both obsolete-success and obsolete-failure probes failed. Intent is invalidated only during effect cleanup, leaving a window in which the previous promise can publish after controls change.” Two traces map to D3.1, so it is charged <strong>once</strong>, at zero — not mixed, and not twice.</p>
+              <span class="cite">candidate/src/features/tickets/inbox/useTicketSearch.ts:49-59</span>
+            </div>
+          </div>
+          <div class="loss">
+            <div class="amt">−5<small>D4.1 · L4</small></div>
+            <div>
+              <h4>A defect no trace caught</h4>
+              <p>“Mutation begin records only the optimistic status, not the exact rollback snapshot; failure merely removes the override, so an intervening search can make rollback expose a different version.” Both mutation traces passed — this came out of reading the source.</p>
+              <span class="cite">candidate/src/features/tickets/inbox/ticketStore.ts:38-41</span>
+            </div>
+          </div>
+          <div class="loss kept">
+            <div class="amt">15 / 20<small>D5</small></div>
+            <div>
+              <h4>Beat submission A on architecture by 7.5</h4>
+              <p>Seven files. “URL/history policy and search transaction policy are extracted into focused modules with owned state” — full marks on D5.1 and D5.2. It loses half-steps for mutation policy split across two modules and for three dispatch-only pass-through wrappers.</p>
+              <span class="cite">candidate/src/features/tickets/inbox/inboxUrl.ts:9-48</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ============ 5. HOW MANY RUNS ============ -->
+  <section id="reliability">
+    <div class="shead"><h2>How many runs a number needs</h2><span class="lbl">Reading the noise</span></div>
+    <p class="note" style="max-width:78ch;margin:-8px 0 26px;color:var(--ink-soft);font-size:17.5px">A single run does not produce a usable score. Models re-run on the identical task write materially different repairs, so the method has to say how many attempts a published figure rests on — and at what reasoning effort.</p>
+
+    <div class="split">
+      <div>
+        <div class="tbl-scroll"><table>
+          <thead><tr><th>Effort</th><th>Runs</th><th>Scores</th><th class="p">Median</th><th class="p">Spread</th></tr></thead>
+          <tbody>
+            <tr><td class="id">low</td><td>3</td><td>67.5 · 62.5 · 55</td><td class="p"><b>62.5</b></td><td class="p">12.5</td></tr>
+            <tr><td class="id">medium</td><td>3</td><td>75 · 75 · 70</td><td class="p"><b>75.0</b></td><td class="p">5.0</td></tr>
+            <tr><td class="id">high</td><td>3</td><td>77.5 · 77.5 · 77.5</td><td class="p"><b>77.5</b></td><td class="p">0.0</td></tr>
+            <tr><td class="id">xhigh</td><td>3</td><td>80 · 77.5 · 77.5</td><td class="p"><b>77.5</b></td><td class="p">2.5</td></tr>
+          </tbody>
+        </table></div>
+        <p class="note" style="margin-top:10px">One model, twelve runs, same task. Raising reasoning effort lifts the median <strong>15 points</strong> and saturates at <code>high</code>. All four bands cost between <strong>$0.24 and $0.28</strong> per run all-in, so the setting is close to free — which is exactly why it has to be fixed and disclosed rather than left to whatever was convenient.</p>
+      </div>
+
+      <div class="calib">
+        <h3>Same model, three runs</h3>
+        <div class="row"><span class="who">run 1 · 11/11 traces</span><span class="n hi">90.0</span></div>
+        <div class="row"><span class="who">run 2 · 11/11 traces</span><span class="n hi">87.5</span></div>
+        <div class="row"><span class="who">run 3 · &nbsp;9/11 traces</span><span class="n lo">75.0</span></div>
+        <p class="why">A different model at fixed effort. Run 3 genuinely broke two production invariants — the spread is the <em>model</em> being inconsistent, not the judge. Published as a single run this model ranks anywhere from first to eleventh.</p>
+      </div>
+    </div>
+
+    <div class="finds" style="margin-top:30px">
+      <div class="find warn">
+        <span class="k">Careful</span>
+        <div>
+          <h3>A stable total is not a stable submission</h3>
+          <p>The three <code>high</code> runs above all scored 77.5 — by completely different routes. One earned a perfect D3 with a monolithic controller; another shipped three modules and a broken search; the third sat between them. They converge on one total through <strong>compensating differences</strong>, not by writing the same repair.</p>
+          <p>So the honest claim is that raising effort lifts the median and tightens the total. It is not evidence that the model became deterministic.</p>
+        </div>
+      </div>
+      <div class="find good">
+        <span class="k">Method</span>
+        <div>
+          <h3>What gets published</h3>
+          <p><strong>Three runs per model at one fixed reasoning effort</strong>, reported as the median with the spread shown. Effort is held constant across every model, because on the ladder above it is worth ~15 points — three times the gap that currently separates the strongest models from each other.</p>
+          <p>Scoring is absolute: each submission is judged against the rubric alone, never against another submission, and the judge never sees a model name.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 6. WHEN A RUN DOESN'T COUNT ============ -->
+  <section id="rejected">
+    <div class="shead"><h2>When a run doesn't count</h2><span class="lbl">Before scoring begins</span></div>
+    <p class="note" style="max-width:78ch;margin:-8px 0 26px;color:var(--ink-soft);font-size:17.5px">A submission is only judged if it clears these first. Nothing here is a scored zero — the run is discarded and re-run, so a harness or provider problem never lands on a model's record.</p>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>Rejected as</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td class="id">path violation</td><td>The diff touched a file outside the two permitted paths — in one case a <code>jsdom-debug.mjs</code> the model left at the workspace root. The allow-list is what keeps a repair from quietly editing the tests or the API.</td></tr>
+        <tr><td class="id">no changes</td><td>The agent finished without modifying a candidate file. Usually a model that spent its whole budget reading and planning.</td></tr>
+        <tr><td class="id">boundary violation</td><td>The transcript shows the agent reaching for the hidden tests or the evaluator directory. Exclusion patterns don't count — a model that tells ripgrep to <em>skip</em> <code>.eval-tests</code> is obeying the boundary, not crossing it.</td></tr>
+        <tr><td class="id">timeout / length</td><td>The wall-clock limit expired, or the model exhausted its context. Wall-clock is the only budget, and it is identical for every agent.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- ============ 7. BANDS ============ -->
+  <section id="bands">
+    <div class="shead"><h2>Grade bands</h2><span class="lbl">Where the total lands</span></div>
+    <div class="bands">
+      <div><span class="r">≥ 85</span><br><span class="n">Strong</span></div>
+      <div><span class="r">70 – 84.99</span><br><span class="n">Solid</span></div>
+      <div><span class="r">55 – 69.99</span><br><span class="n">Mixed</span></div>
+      <div><span class="r">40 – 54.99</span><br><span class="n">Weak</span></div>
+      <div><span class="r">&lt; 40</span><br><span class="n">Poor</span></div>
+    </div>
+    <p class="foot">Rubric <code>phase1-inbox-repair-v4</code>, source at <code>evals/13-support-inbox/phase1-code-quality-eval.md</code>. Judge: <code>gpt-5.6-sol</code> via the Codex CLI at medium reasoning effort, one judgment per submission, blinded to model identity and to every other submission. Worked examples and reliability figures are recorded judgments from September 2026, shown to illustrate the method; they are not a leaderboard and the model names are withheld for that reason. A calibration repair is held outside every subject workspace at <code>evals/13-support-inbox/reference/phase-01/</code> and must pass all eleven traces whenever the task or tests change.</p>
+  </section>
+
+</div>
+
+</body>
+</html>
